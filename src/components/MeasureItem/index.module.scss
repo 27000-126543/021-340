@@ -1,0 +1,115 @@
+@use '@/styles/variables.scss' as *;
+
+.item {
+  padding: $spacing-lg 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.clickable {
+    transition: all $transition-base;
+    &:active {
+      opacity: 0.7;
+      background-color: $color-bg-hover;
+    }
+  }
+}
+
+.header {
+  margin-bottom: $spacing-sm;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.name {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.standard {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.measureRow {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-lg;
+  margin-top: $spacing-sm;
+}
+
+.valueBlock,
+.rangeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.valueLabel,
+.rangeLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.value {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.valuePass {
+  color: $color-success;
+}
+
+.valueFail {
+  color: $color-error;
+}
+
+.rangeValue {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.time {
+  margin-left: auto;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.unmeasured {
+  padding: $spacing-md 0;
+}
+
+.unmeasuredText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.remarkRow {
+  display: flex;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.remarkLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.remarkText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex: 1;
+  margin-left: $spacing-xs;
+}

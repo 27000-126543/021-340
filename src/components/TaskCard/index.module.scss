@@ -1,0 +1,134 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all $transition-base;
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.floor {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background-color: $color-bg-section;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.progressBar {
+  width: 120rpx;
+  height: 12rpx;
+  background-color: $color-bg-section;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  transition: width $transition-base;
+
+  &.progressFull {
+    background: linear-gradient(90deg, $color-success 0%, $color-success-light 100%);
+  }
+}
+
+.progressText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  min-width: 70rpx;
+  text-align: right;
+}
+
+.arrow {
+  font-size: 40rpx;
+  color: $color-text-tertiary;
+  line-height: 1;
+  transition: transform $transition-base;
+
+  &.arrowUp {
+    transform: rotate(-90deg);
+  }
+}
+
+.locationRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+  flex-wrap: wrap;
+}
+
+.locationText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.statTag,
+.statTagFail {
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.statTag {
+  background-color: rgba(22, 163, 74, 0.1);
+}
+
+.statTagFail {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.statPass {
+  font-size: $font-size-xs;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+}
+
+.statFail {
+  font-size: $font-size-xs;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.taskList {
+  margin-top: $spacing-xs;
+}
