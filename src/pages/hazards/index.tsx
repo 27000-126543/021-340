@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Input, Textarea, Image, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import HazardCard from '@/components/HazardCard';
-import { hazardTypeOptions, userOptions, mockHazards } from '@/data/hazards';
-import { formatDateTime, formatDate } from '@/utils/validator';
+import StatusTag from '@/components/StatusTag';
+import { hazardTypeOptions, userOptions } from '@/data/hazards';
+import { formatDateTime } from '@/utils/validator';
+import { useAppStore } from '@/store';
 import type { Hazard, HazardType, HazardLevel, HazardStatus, UserOption } from '@/types';
 
 type TabKey = 'all' | HazardStatus;
@@ -27,8 +29,8 @@ const deadlineOptions = [
 
 const HazardsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
-  const [hazards, setHazards] = useState<Hazard[]>(mockHazards);
   const [showForm, setShowForm] = useState(false);
+  const [recheckAlert, setRecheckAlert] = useState<Hazard[]>([]);
 
   const [formType, setFormType] = useState<HazardType | ''>('');
   const [formLevel, setFormLevel] = useState<HazardLevel>('major');
@@ -39,9 +41,48 @@ const HazardsPage: React.FC = () => {
   const [formRectifier, setFormRectifier] = useState<UserOption | null>(null);
   const [formDeadline, setFormDeadline] = useState('today');
 
+  const hazards = useAppStore((s) => s.hazards);
+  const addHazard = useAppStore((s) => s.addHazard);
+  const loadFromStorage = useAppStore((s) => s.loadFromStorage);
+  const checkAndUpdateRecheckStatus = useAppStore((s) => s.checkAndUpdateRecheckStatus);
+  const isRecheckOverdue = useAppStore((s) => s.isRecheckOverdue);
+
+  const checkRecheckAlerts = () => {
+    const updated = checkAndUpdateRecheckStatus();
+    if (updated > 0) {
+      setTimeout(() => {
+        Taro.vibrateShort({ type: 'heavy' });
+        Taro.showToast({
+          title: `${updated}条隐患到复查时间`,
+          icon: 'none',
+          duration: 2500
+        });
+      }, 300);
+    }
+    const due = hazards.filter(h => isRecheckOverdue(h));
+    setRecheckAlert(due);
+  };
+
+  useDidShow(() => {
+    loadFromStorage();
+    setTimeout(() => {
+      checkRecheckAlerts();
+    }, 200);
+    console.log('[HazardsPage] 页面显示，刷新数据并检查复查提醒');
+  });
+
+  useEffect(() => {
+    const due = hazards.filter(h => isRecheckOverdue(h));
+    setRecheckAlert(due);
+  }, [hazards, isRecheckOverdue]);
+
   const pendingCount = useMemo(() =>
     hazards.filter(h => h.status === 'pending' || h.status === 'rectifying' || h.status === 'recheck').length
   , [hazards]);
+
+  const recheckCount = useMemo(() =>
+    recheckAlert.length
+  , [recheckAlert]);
 
   const filteredHazards = useMemo(() => {
     if (activeTab === 'all') return hazards;
@@ -85,9 +126,15 @@ const HazardsPage: React.FC = () => {
 
   const computeDeadline = (): string => {
     const opt = deadlineOptions.find(d => d.key === formDeadline);
-    if (!opt) return formatDate(new Date()) + ' 18:00';
+    if (!opt) return formatDateTime(new Date(new Date().setHours(18, 0, 0, 0)));
     const d = new Date();
     d.setHours(d.getHours() + opt.hours);
+    return formatDateTime(d);
+  };
+
+  const computeRecheckTime = (): string => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + 30);
     return formatDateTime(d);
   };
 
@@ -128,9 +175,7 @@ const HazardsPage: React.FC = () => {
       const typeOpt = hazardTypeOptions.find(o => o.key === formType);
       const levelMap: Record<HazardLevel, string> = { minor: '轻微', major: '一般', critical: '严重' };
       const deadline = computeDeadline();
-
-      const recheckTime = new Date();
-      recheckTime.setMinutes(recheckTime.getMinutes() + 30);
+      const recheckTime = computeRecheckTime();
 
       const newHazard: Hazard = {
         id: 'hz-' + Date.now(),
@@ -148,13 +193,12 @@ const HazardsPage: React.FC = () => {
         rectifier: formRectifier.name,
         rectifierPhone: formRectifier.phone,
         deadline,
-        recheckTime: formatDateTime(recheckTime),
+        recheckTime,
         status: 'pending',
         statusName: '待整改'
       };
 
-      setHazards(prev => [newHazard, ...prev]);
-      console.log('[HazardsPage] 新增隐患:', newHazard);
+      addHazard(newHazard);
 
       Taro.showToast({ title: '上报成功', icon: 'success' });
       Taro.vibrateShort({ type: 'light' });
@@ -162,10 +206,11 @@ const HazardsPage: React.FC = () => {
       setTimeout(() => {
         Taro.showModal({
           title: '复查提醒已设置',
-          content: `系统将于 ${newHazard.recheckTime} 提醒您复查该隐患`,
+          content: `系统将于 ${newHazard.recheckTime} 自动提醒您复查该隐患`,
           showCancel: false,
           confirmText: '知道了'
         });
+        checkRecheckAlerts();
       }, 800);
 
       closeForm();
@@ -190,6 +235,24 @@ const HazardsPage: React.FC = () => {
         </View>
       </View>
 
+      {recheckCount > 0 && (
+        <View className={styles.recheckAlertBar}>
+          <View className={styles.recheckAlertIcon}>
+            <Text className={styles.recheckAlertIconText}>⏰</Text>
+          </View>
+          <View className={styles.recheckAlertContent}>
+            <Text className={styles.recheckAlertTitle}>有 {recheckCount} 条隐患需复查</Text>
+            <Text className={styles.recheckAlertDesc}>复查时间已到，请前往现场核实整改情况</Text>
+          </View>
+          <View
+            className={styles.recheckAlertBtn}
+            onClick={() => setActiveTab('recheck')}
+          >
+            <Text className={styles.recheckAlertBtnText}>去查看</Text>
+          </View>
+        </View>
+      )}
+
       <View className={styles.filterTabs}>
         {tabs.map(tab => (
           <View
@@ -197,23 +260,29 @@ const HazardsPage: React.FC = () => {
             className={classnames(styles.tabItem, activeTab === tab.key && styles.active)}
             onClick={() => setActiveTab(tab.key)}
           >
-            <Text className={styles.tabText}>{tab.label}</Text>
+            <Text className={styles.tabText}>
+              {tab.label}
+              {tab.key === 'recheck' && recheckCount > 0 && ` (${recheckCount})`}
+            </Text>
           </View>
         ))}
       </View>
 
       <View className={styles.hazardList}>
         {filteredHazards.length > 0 ? (
-          filteredHazards.map(h => (
-            <View key={h.id}>
-              {h.recheckTime && h.status !== 'closed' && (
-                <View className={styles.recheckBadge}>
-                  <Text className={styles.recheckBadgeText}>⏰ 复查: {h.recheckTime}</Text>
-                </View>
-              )}
-              <HazardCard hazard={h} />
-            </View>
-          ))
+          filteredHazards.map(h => {
+            const overdue = isRecheckOverdue(h);
+            return (
+              <View key={h.id} className={classnames(overdue && styles.hazardItemOverdue)}>
+                {overdue && (
+                  <View className={styles.overdueBadge}>
+                    <Text className={styles.overdueBadgeText}>⏰ 复查时间已到</Text>
+                  </View>
+                )}
+                <HazardCard hazard={h} />
+              </View>
+            );
+          })
         ) : (
           <View className={styles.empty}>
             <Text className={styles.emptyIcon}>✅</Text>

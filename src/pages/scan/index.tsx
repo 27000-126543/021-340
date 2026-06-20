@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, Input, Textarea, Image, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import StatusTag from '@/components/StatusTag';
-import { mockMeasurePoints, findPointByQr } from '@/data/measurePoints';
+import { findPointByQr } from '@/data/measurePoints';
 import { validateMeasure, formatDateTime } from '@/utils/validator';
+import { useAppStore } from '@/store';
 import type { MeasurePoint, ValidateResult } from '@/types';
 
 const ScanPage: React.FC = () => {
@@ -16,7 +17,20 @@ const ScanPage: React.FC = () => {
   const [photos, setPhotos] = useState<string[]>([]);
   const [validateResult, setValidateResult] = useState<ValidateResult | null>(null);
 
-  const recentPoints = useMemo(() => mockMeasurePoints.filter(p => p.lastMeasureTime).slice(0, 5), []);
+  const measurePoints = useAppStore((s) => s.measurePoints);
+  const updateTaskMeasure = useAppStore((s) => s.updateTaskMeasure);
+  const updateMeasurePoint = useAppStore((s) => s.updateMeasurePoint);
+  const loadFromStorage = useAppStore((s) => s.loadFromStorage);
+
+  useDidShow(() => {
+    loadFromStorage();
+    console.log('[ScanPage] 页面显示，刷新数据');
+  });
+
+  const recentPoints = useMemo(
+    () => measurePoints.filter(p => p.lastMeasureTime).slice(0, 5),
+    [measurePoints]
+  );
 
   const handleScan = () => {
     console.log('[ScanPage] 开始扫码');
@@ -43,7 +57,7 @@ const ScanPage: React.FC = () => {
   };
 
   const lookupPoint = (code: string) => {
-    const point = findPointByQr(code);
+    const point = findPointByQr(code) || measurePoints.find(p => p.id === code || p.qrCode === code);
     if (point) {
       setCurrentPoint(point);
       setMeasuredValue('');
@@ -123,22 +137,40 @@ const ScanPage: React.FC = () => {
   };
 
   const doSubmit = () => {
+    if (!currentPoint) return;
+
     Taro.showLoading({ title: '提交中...', mask: true });
+
+    const numValue = Number(measuredValue);
+    const pass = validateResult?.pass ?? true;
+
     setTimeout(() => {
       Taro.hideLoading();
-      const pass = validateResult?.pass ?? true;
+
+      updateTaskMeasure(
+        currentPoint.sectionId,
+        currentPoint.standard.key,
+        numValue,
+        pass,
+        photos
+      );
+
+      updateMeasurePoint(currentPoint.id, numValue, pass);
+
       Taro.showToast({
         title: pass ? '提交成功' : '已提交（不合格）',
         icon: pass ? 'success' : 'none'
       });
+
       console.log('[ScanPage] 提交数据:', {
-        pointId: currentPoint?.id,
-        value: measuredValue,
+        pointId: currentPoint.id,
+        value: numValue,
         photos,
         remark,
         result: validateResult,
         time: formatDateTime(new Date())
       });
+
       setCurrentPoint(null);
       setMeasuredValue('');
       setValidateResult(null);

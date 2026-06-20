@@ -47,9 +47,14 @@ const MeasureItem: React.FC<MeasureItemProps> = ({ task, onClick }) => {
             <Text className={styles.rangeLabel}>允许范围</Text>
             <Text className={styles.rangeValue}>{lower} ~ {upper}{standard.unit}</Text>
           </View>
-          {measureTime && (
-            <Text className={styles.time}>{measureTime}</Text>
-          )}
+          <View className={styles.metaBlock}>
+            {task.photoUrl && (
+              <Text className={styles.photoCount}>📷 1张</Text>
+            )}
+            {measureTime && (
+              <Text className={styles.time}>{measureTime}</Text>
+            )}
+          </View>
         </View>
       ) : (
         <View className={styles.unmeasured}>

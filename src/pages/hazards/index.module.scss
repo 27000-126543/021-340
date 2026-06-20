@@ -510,3 +510,105 @@
   color: $color-warning;
   font-weight: $font-weight-medium;
 }
+
+.recheckAlertBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+  border: 2rpx solid rgba(239, 68, 68, 0.3);
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 4rpx 16rpx rgba(239, 68, 68, 0.15);
+}
+
+.recheckAlertIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-round;
+  background-color: $color-error;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.recheckAlertIconText {
+  font-size: 32rpx;
+}
+
+.recheckAlertContent {
+  flex: 1;
+}
+
+.recheckAlertTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.recheckAlertDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.recheckAlertBtn {
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-error;
+  border-radius: $radius-button;
+  flex-shrink: 0;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.97);
+  }
+}
+
+.recheckAlertBtnText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.hazardItemOverdue {
+  position: relative;
+  padding-left: $spacing-xs;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: $spacing-md;
+    width: 6rpx;
+    background: linear-gradient(180deg, $color-error 0%, $color-warning 100%);
+    border-radius: $radius-xs;
+  }
+}
+
+.overdueBadge {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 20rpx;
+  background-color: $color-error;
+  border-radius: $radius-xs $radius-xs 0 0;
+  margin-left: 0;
+  width: fit-content;
+}
+
+.overdueBadgeText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}

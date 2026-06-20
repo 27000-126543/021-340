@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from '@tarojs/components';
+import classnames from 'classnames';
 import styles from './index.module.scss';
 import StatusTag from '@/components/StatusTag';
 import type { Hazard } from '@/types';

@@ -78,8 +78,21 @@
   color: $color-text-secondary;
 }
 
-.time {
+.metaBlock {
   margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4rpx;
+}
+
+.photoCount {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.time {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
 }

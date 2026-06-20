@@ -4,7 +4,7 @@ import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import TaskCard from '@/components/TaskCard';
-import { mockSections } from '@/data/tasks';
+import { useAppStore } from '@/store';
 import type { ConstructionSection, TaskStatus } from '@/types';
 
 type FilterType = 'all' | TaskStatus;
@@ -19,10 +19,12 @@ const filters: { key: FilterType; label: string }[] = [
 
 const TasksPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all');
-  const [sections, setSections] = useState<ConstructionSection[]>(mockSections);
+  const sections = useAppStore((s) => s.sections);
+  const loadFromStorage = useAppStore((s) => s.loadFromStorage);
 
   useDidShow(() => {
-    console.log('[TasksPage] 页面显示');
+    loadFromStorage();
+    console.log('[TasksPage] 页面显示，刷新数据');
   });
 
   const stats = useMemo(() => {
@@ -51,6 +53,7 @@ const TasksPage: React.FC = () => {
 
   const handleRefresh = () => {
     console.log('[TasksPage] 下拉刷新');
+    loadFromStorage();
     setTimeout(() => {
       Taro.stopPullDownRefresh();
       Taro.showToast({ title: '已刷新', icon: 'success' });
