@@ -88,8 +88,12 @@
 
 .photoCount {
   font-size: $font-size-xs;
-  color: $color-primary;
+  color: $color-text-tertiary;
   font-weight: $font-weight-medium;
+
+  &.photoCountHas {
+    color: $color-primary;
+  }
 }
 
 .time {

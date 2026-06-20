@@ -67,6 +67,7 @@ export const mockSections: ConstructionSection[] = [
         status: 'pass',
         measuredValue: 890,
         measureTime: '2026-06-21 08:30',
+        photoCount: 2,
         remark: '符合方案要求'
       },
       {
@@ -76,7 +77,8 @@ export const mockSections: ConstructionSection[] = [
         standard: measureStandards.sweepingRod,
         status: 'pass',
         measuredValue: 180,
-        measureTime: '2026-06-21 08:45'
+        measureTime: '2026-06-21 08:45',
+        photoCount: 1
       },
       {
         id: 'task-001-3',
@@ -86,6 +88,7 @@ export const mockSections: ConstructionSection[] = [
         status: 'fail',
         measuredValue: 35,
         measureTime: '2026-06-21 09:10',
+        photoCount: 3,
         remark: '角度偏小，需调整'
       },
       {
@@ -93,14 +96,16 @@ export const mockSections: ConstructionSection[] = [
         key: 'jackExposure',
         name: '顶托外露长度',
         standard: measureStandards.jackExposure,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-001-5',
         key: 'monitorDevice',
         name: '监测设备安装',
         standard: measureStandards.monitorDevice,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       }
     ]
   },
@@ -120,35 +125,40 @@ export const mockSections: ConstructionSection[] = [
         standard: measureStandards.poleSpacing,
         status: 'pass',
         measuredValue: 920,
-        measureTime: '2026-06-21 07:50'
+        measureTime: '2026-06-21 07:50',
+        photoCount: 1
       },
       {
         id: 'task-002-2',
         key: 'sweepingRod',
         name: '扫地杆',
         standard: measureStandards.sweepingRod,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-002-3',
         key: 'scissorsBrace',
         name: '剪刀撑',
         standard: measureStandards.scissorsBrace,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-002-4',
         key: 'jackExposure',
         name: '顶托外露长度',
         standard: measureStandards.jackExposure,
-        status: 'progress'
+        status: 'progress',
+        photoCount: 0
       },
       {
         id: 'task-002-5',
         key: 'monitorDevice',
         name: '监测设备安装',
         standard: measureStandards.monitorDevice,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       }
     ]
   },
@@ -166,35 +176,40 @@ export const mockSections: ConstructionSection[] = [
         key: 'poleSpacing',
         name: '立杆间距',
         standard: measureStandards.poleSpacing,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-003-2',
         key: 'sweepingRod',
         name: '扫地杆',
         standard: measureStandards.sweepingRod,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-003-3',
         key: 'scissorsBrace',
         name: '剪刀撑',
         standard: measureStandards.scissorsBrace,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-003-4',
         key: 'jackExposure',
         name: '顶托外露长度',
         standard: measureStandards.jackExposure,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       },
       {
         id: 'task-003-5',
         key: 'monitorDevice',
         name: '监测设备安装',
         standard: measureStandards.monitorDevice,
-        status: 'pending'
+        status: 'pending',
+        photoCount: 0
       }
     ]
   }

@@ -12,7 +12,7 @@ interface MeasureItemProps {
 }
 
 const MeasureItem: React.FC<MeasureItemProps> = ({ task, onClick }) => {
-  const { standard, status, measuredValue, measureTime, remark } = task;
+  const { standard, status, measuredValue, measureTime, photoCount, remark } = task;
   const lower = standard.standardValue - standard.allowDeviation;
   const upper = standard.standardValue + standard.allowDeviation;
 
@@ -48,9 +48,7 @@ const MeasureItem: React.FC<MeasureItemProps> = ({ task, onClick }) => {
             <Text className={styles.rangeValue}>{lower} ~ {upper}{standard.unit}</Text>
           </View>
           <View className={styles.metaBlock}>
-            {task.photoUrl && (
-              <Text className={styles.photoCount}>📷 1张</Text>
-            )}
+            <Text className={classnames(styles.photoCount, photoCount > 0 && styles.photoCountHas)}>📷 {photoCount}张</Text>
             {measureTime && (
               <Text className={styles.time}>{measureTime}</Text>
             )}

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import Taro from '@tarojs/taro';
-import type { ConstructionSection, MeasurePoint, Hazard, TaskItem } from '@/types';
-import { mockSections, measureStandards } from '@/data/tasks';
+import type { ConstructionSection, MeasurePoint, Hazard, TaskItem, RectificationInfo, RecheckInfo } from '@/types';
+import { mockSections } from '@/data/tasks';
 import { mockMeasurePoints } from '@/data/measurePoints';
 import { mockHazards } from '@/data/hazards';
 
@@ -21,25 +21,40 @@ interface AppState {
     taskKey: string,
     value: number,
     pass: boolean,
-    photos: string[]
+    photos: string[],
+    remark: string
   ) => void;
 
   updateMeasurePoint: (
     pointId: string,
     value: number,
-    pass: boolean
+    pass: boolean,
+    photos: string[],
+    remark: string
   ) => void;
 
   addHazard: (hazard: Hazard) => void;
   updateHazardStatus: (id: string, status: Hazard['status'], statusName: string) => void;
+  submitRectification: (id: string, info: RectificationInfo) => void;
+  submitRecheck: (id: string, passed: boolean, info: RecheckInfo) => void;
   checkAndUpdateRecheckStatus: () => number;
 
   getRecheckDueHazards: () => Hazard[];
   isRecheckOverdue: (hazard: Hazard) => boolean;
 }
 
+const ensurePhotoCount = (sections: ConstructionSection[]): ConstructionSection[] => {
+  return sections.map(s => ({
+    ...s,
+    tasks: s.tasks.map(t => ({
+      ...t,
+      photoCount: t.photoCount ?? (t.photoUrl ? 1 : 0)
+    }))
+  }));
+};
+
 const initialState = {
-  sections: mockSections,
+  sections: ensurePhotoCount(mockSections),
   measurePoints: mockMeasurePoints,
   hazards: mockHazards
 };
@@ -50,10 +65,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   initStore: () => {
     const loaded = get().loadFromStorage();
     if (!loaded) {
-      console.log('[Store] 使用初始Mock数据');
+      set({ sections: ensurePhotoCount(mockSections) });
       get().saveToStorage();
-    } else {
-      console.log('[Store] 从本地存储加载数据成功');
     }
   },
 
@@ -67,9 +80,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         savedAt: Date.now()
       };
       Taro.setStorageSync(STORAGE_KEY, JSON.stringify(data));
-      console.log('[Store] 数据已持久化到本地存储');
     } catch (e) {
-      console.error('[Store] 保存到本地存储失败:', e);
+      console.error('[Store] 保存失败:', e);
     }
   },
 
@@ -80,23 +92,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       const data = JSON.parse(dataStr);
       if (data.sections && data.measurePoints && data.hazards) {
         set({
-          sections: data.sections,
+          sections: ensurePhotoCount(data.sections),
           measurePoints: data.measurePoints,
           hazards: data.hazards
         });
-        console.log('[Store] 从本地存储加载完成, savedAt:', new Date(data.savedAt || 0).toLocaleString());
         return true;
       }
       return false;
     } catch (e) {
-      console.error('[Store] 从本地存储加载失败:', e);
+      console.error('[Store] 加载失败:', e);
       return false;
     }
   },
 
-  updateTaskMeasure: (sectionId, taskKey, value, pass, photos) => {
-    const now = new Date();
-    const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  updateTaskMeasure: (sectionId, taskKey, value, pass, photos, remark) => {
+    const timeStr = formatNow();
 
     set((state) => {
       const newSections = state.sections.map((s) => {
@@ -113,8 +123,9 @@ export const useAppStore = create<AppState>((set, get) => ({
             status: pass ? 'pass' as const : 'fail' as const,
             measuredValue: value,
             measureTime: timeStr,
-            photoUrl: photos[0],
-            remark: pass ? '符合方案要求' : '超出允许偏差，需整改'
+            photoUrl: photos[0] || '',
+            photoCount: photos.length,
+            remark: remark || (pass ? '符合方案要求' : '超出允许偏差，需整改')
           };
         });
         return {
@@ -128,12 +139,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     get().saveToStorage();
-    console.log('[Store] 任务检测值已更新:', { sectionId, taskKey, value, pass, photoCount: photos.length });
   },
 
-  updateMeasurePoint: (pointId, value, pass) => {
-    const now = new Date();
-    const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  updateMeasurePoint: (pointId, value, pass, photos, remark) => {
+    const timeStr = formatNow();
 
     set((state) => {
       const point = state.measurePoints.find((p) => p.id === pointId);
@@ -144,7 +153,15 @@ export const useAppStore = create<AppState>((set, get) => ({
         ...point,
         lastMeasureTime: timeStr,
         lastMeasuredValue: value,
-        lastStatus: pass ? 'pass' : 'fail'
+        lastStatus: pass ? 'pass' : 'fail',
+        lastRecord: {
+          value,
+          unit: point.standard.unit,
+          pass,
+          time: timeStr,
+          photos,
+          remark: remark || ''
+        }
       };
 
       return {
@@ -153,7 +170,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     get().saveToStorage();
-    console.log('[Store] 测点数据已更新:', { pointId, value, pass });
   },
 
   addHazard: (hazard) => {
@@ -161,7 +177,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       hazards: [hazard, ...state.hazards]
     }));
     get().saveToStorage();
-    console.log('[Store] 隐患已新增:', hazard.id, hazard.typeName);
   },
 
   updateHazardStatus: (id, status, statusName) => {
@@ -171,7 +186,34 @@ export const useAppStore = create<AppState>((set, get) => ({
       )
     }));
     get().saveToStorage();
-    console.log('[Store] 隐患状态已更新:', { id, status });
+  },
+
+  submitRectification: (id, info) => {
+    set((state) => ({
+      hazards: state.hazards.map((h) =>
+        h.id === id ? {
+          ...h,
+          status: 'recheck' as const,
+          statusName: '待复查',
+          rectification: info
+        } : h
+      )
+    }));
+    get().saveToStorage();
+  },
+
+  submitRecheck: (id, passed, info) => {
+    set((state) => ({
+      hazards: state.hazards.map((h) =>
+        h.id === id ? {
+          ...h,
+          status: passed ? 'closed' as const : 'rectifying' as const,
+          statusName: passed ? '已关闭' : '整改中',
+          recheckResult: info
+        } : h
+      )
+    }));
+    get().saveToStorage();
   },
 
   getRecheckDueHazards: () => {
@@ -197,9 +239,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     let updated = 0;
     set((state) => {
       const newHazards = state.hazards.map((h) => {
-        if (h.status === 'closed') return h;
+        if (h.status === 'closed' || h.status === 'recheck') return h;
         if (!h.recheckTime) return h;
-        if (h.status === 'recheck') return h;
         const recheckDate = new Date(h.recheckTime.replace(' ', 'T')).getTime();
         if (now >= recheckDate && (h.status === 'pending' || h.status === 'rectifying')) {
           updated++;
@@ -209,10 +250,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
       return { hazards: newHazards };
     });
-    if (updated > 0) {
-      get().saveToStorage();
-      console.log('[Store] 复查时间到期，已更新', updated, '条隐患状态为待复查');
-    }
+    if (updated > 0) get().saveToStorage();
     return updated;
   }
 }));
+
+function formatNow(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+}

@@ -7,7 +7,7 @@ import StatusTag from '@/components/StatusTag';
 import { findPointByQr } from '@/data/measurePoints';
 import { validateMeasure, formatDateTime } from '@/utils/validator';
 import { useAppStore } from '@/store';
-import type { MeasurePoint, ValidateResult } from '@/types';
+import type { MeasurePoint, ValidateResult, MeasureRecord } from '@/types';
 
 const ScanPage: React.FC = () => {
   const [currentPoint, setCurrentPoint] = useState<MeasurePoint | null>(null);
@@ -16,6 +16,8 @@ const ScanPage: React.FC = () => {
   const [remark, setRemark] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [validateResult, setValidateResult] = useState<ValidateResult | null>(null);
+  const [viewingRecord, setViewingRecord] = useState<MeasureRecord | null>(null);
+  const [viewingPointName, setViewingPointName] = useState('');
 
   const measurePoints = useAppStore((s) => s.measurePoints);
   const updateTaskMeasure = useAppStore((s) => s.updateTaskMeasure);
@@ -24,7 +26,6 @@ const ScanPage: React.FC = () => {
 
   useDidShow(() => {
     loadFromStorage();
-    console.log('[ScanPage] 页面显示，刷新数据');
   });
 
   const recentPoints = useMemo(
@@ -33,16 +34,13 @@ const ScanPage: React.FC = () => {
   );
 
   const handleScan = () => {
-    console.log('[ScanPage] 开始扫码');
     Taro.scanCode({
       onlyFromCamera: false,
       scanType: ['qrCode', 'barCode'],
       success: (res) => {
-        console.log('[ScanPage] 扫码结果:', res.result);
         lookupPoint(res.result);
       },
-      fail: (err) => {
-        console.error('[ScanPage] 扫码失败:', err);
+      fail: () => {
         Taro.showToast({ title: '扫码取消或失败', icon: 'none' });
       }
     });
@@ -65,11 +63,12 @@ const ScanPage: React.FC = () => {
       setRemark('');
       setPhotos([]);
       setManualCode('');
+      setViewingRecord(null);
       Taro.vibrateShort({ type: 'light' });
     } else {
       Taro.showModal({
         title: '未找到测点',
-        content: `编号「${code}」对应的测点不存在，请检查后重试`,
+        content: `编号「${code}」对应的测点不存在`,
         showCancel: false,
         confirmText: '知道了'
       });
@@ -77,11 +76,29 @@ const ScanPage: React.FC = () => {
   };
 
   const handleRecentClick = (point: MeasurePoint) => {
-    setCurrentPoint(point);
-    setMeasuredValue('');
-    setValidateResult(null);
-    setRemark('');
-    setPhotos([]);
+    if (point.lastRecord) {
+      setViewingRecord(point.lastRecord);
+      setViewingPointName(point.standard.name + ' · ' + point.location);
+    } else {
+      setCurrentPoint(point);
+      setMeasuredValue('');
+      setValidateResult(null);
+      setRemark('');
+      setPhotos([]);
+      setViewingRecord(null);
+    }
+  };
+
+  const handleStartNewMeasure = () => {
+    const point = recentPoints.find(p => p.lastRecord === viewingRecord) || measurePoints.find(p => p.lastRecord === viewingRecord);
+    if (point) {
+      setCurrentPoint(point);
+      setMeasuredValue('');
+      setValidateResult(null);
+      setRemark('');
+      setPhotos([]);
+      setViewingRecord(null);
+    }
   };
 
   const handleValueChange = (v: string) => {
@@ -107,7 +124,6 @@ const ScanPage: React.FC = () => {
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        console.log('[ScanPage] 选择图片:', res.tempFilePaths);
         setPhotos(prev => [...prev, ...res.tempFilePaths].slice(0, 3));
       }
     });
@@ -138,37 +154,18 @@ const ScanPage: React.FC = () => {
 
   const doSubmit = () => {
     if (!currentPoint) return;
-
     Taro.showLoading({ title: '提交中...', mask: true });
-
     const numValue = Number(measuredValue);
     const pass = validateResult?.pass ?? true;
 
     setTimeout(() => {
       Taro.hideLoading();
-
-      updateTaskMeasure(
-        currentPoint.sectionId,
-        currentPoint.standard.key,
-        numValue,
-        pass,
-        photos
-      );
-
-      updateMeasurePoint(currentPoint.id, numValue, pass);
+      updateTaskMeasure(currentPoint.sectionId, currentPoint.standard.key, numValue, pass, photos, remark);
+      updateMeasurePoint(currentPoint.id, numValue, pass, photos, remark);
 
       Taro.showToast({
         title: pass ? '提交成功' : '已提交（不合格）',
         icon: pass ? 'success' : 'none'
-      });
-
-      console.log('[ScanPage] 提交数据:', {
-        pointId: currentPoint.id,
-        value: numValue,
-        photos,
-        remark,
-        result: validateResult,
-        time: formatDateTime(new Date())
       });
 
       setCurrentPoint(null);
@@ -185,6 +182,68 @@ const ScanPage: React.FC = () => {
     standard.standardValue,
     standard.standardValue + standard.allowDeviation
   ] : [];
+
+  if (viewingRecord) {
+    return (
+      <ScrollView scrollY className={styles.page}>
+        <View className={styles.detailPanel}>
+          <View className={styles.detailHeader}>
+            <Text className={styles.detailTitle}>上次检测详情</Text>
+            <View className={styles.detailClose} onClick={() => setViewingRecord(null)}>
+              <Text className={styles.detailCloseText}>← 返回</Text>
+            </View>
+          </View>
+
+          <Text className={styles.detailPointName}>{viewingPointName}</Text>
+
+          <View className={styles.detailRow}>
+            <Text className={styles.detailLabel}>实测值</Text>
+            <Text className={classnames(styles.detailVal, viewingRecord.pass ? styles.valPass : styles.valFail)}>
+              {viewingRecord.value}{viewingRecord.unit}
+            </Text>
+          </View>
+
+          <View className={styles.detailRow}>
+            <Text className={styles.detailLabel}>判定结果</Text>
+            <StatusTag status={viewingRecord.pass ? 'pass' : 'fail'} size="md" />
+          </View>
+
+          <View className={styles.detailRow}>
+            <Text className={styles.detailLabel}>检测时间</Text>
+            <Text className={styles.detailVal}>{viewingRecord.time}</Text>
+          </View>
+
+          {viewingRecord.photos.length > 0 ? (
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionLabel}>📷 检测照片 ({viewingRecord.photos.length}张)</Text>
+              <View className={styles.detailPhotos}>
+                {viewingRecord.photos.map((p, idx) => (
+                  <View key={idx} className={styles.detailPhotoItem}>
+                    <Image className={styles.detailPhotoImg} src={p} mode="aspectFill" />
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : (
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionLabel}>📷 检测照片: 无</Text>
+            </View>
+          )}
+
+          {viewingRecord.remark && (
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionLabel}>📝 备注</Text>
+              <Text className={styles.detailRemark}>{viewingRecord.remark}</Text>
+            </View>
+          )}
+
+          <Button className={styles.newMeasureBtn} onClick={handleStartNewMeasure}>
+            <Text className={styles.newMeasureBtnText}>以此为基础重新检测</Text>
+          </Button>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView scrollY className={styles.page}>
@@ -216,11 +275,11 @@ const ScanPage: React.FC = () => {
               <Text className={styles.pointName}>{standard.name}</Text>
               <Text className={styles.pointLocation}>📍 {currentPoint.location}</Text>
               {currentPoint.lastStatus && (
-                <View style={{ marginTop: '16rpx' }}>
+                <View style={{ marginTop: '16rpx', display: 'flex', alignItems: 'center' }}>
                   <StatusTag status={currentPoint.lastStatus} size="md" />
                   {currentPoint.lastMeasuredValue !== undefined && (
                     <Text style={{ marginLeft: '16rpx', fontSize: '24rpx', color: '#94A3B8' }}>
-                      上次: {currentPoint.lastMeasuredValue}{standard.unit} @ {currentPoint.lastMeasureTime}
+                      上次: {currentPoint.lastMeasuredValue}{standard.unit}
                     </Text>
                   )}
                 </View>
@@ -256,11 +315,7 @@ const ScanPage: React.FC = () => {
               />
               <View className={styles.quickNumRow}>
                 {quickNums.map(n => (
-                  <Button
-                    key={n}
-                    className={styles.quickNumBtn}
-                    onClick={() => handleQuickNum(n)}
-                  >
+                  <Button key={n} className={styles.quickNumBtn} onClick={() => handleQuickNum(n)}>
                     <Text className={styles.quickNumText}>{n}</Text>
                   </Button>
                 ))}
@@ -270,9 +325,7 @@ const ScanPage: React.FC = () => {
             {validateResult && (
               <View className={classnames(styles.validateBox, validateResult.pass ? styles.pass : styles.fail)}>
                 <View className={styles.validateRow}>
-                  <Text className={styles.validateIcon}>
-                    {validateResult.pass ? '✅' : '⚠️'}
-                  </Text>
+                  <Text className={styles.validateIcon}>{validateResult.pass ? '✅' : '⚠️'}</Text>
                   <Text className={styles.validateText}>{validateResult.message}</Text>
                 </View>
               </View>

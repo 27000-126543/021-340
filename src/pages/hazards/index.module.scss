@@ -612,3 +612,11 @@
   font-weight: $font-weight-semibold;
   color: $color-text-white;
 }
+
+.rectifySubmitBtn {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.recheckPassBtn {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+}

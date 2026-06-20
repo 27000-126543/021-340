@@ -108,3 +108,118 @@
   font-size: $font-size-md;
   color: $color-text-tertiary;
 }
+
+.viewToggle {
+  display: flex;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: 6rpx;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: $spacing-sm 0;
+  text-align: center;
+  border-radius: $radius-sm;
+  transition: all $transition-base;
+
+  &.toggleActive {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    .toggleText {
+      color: $color-text-white;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.toggleText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.summaryItem {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+  border: 2rpx solid transparent;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+
+  &.summaryItemAlert {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, $color-bg-card 0%, rgba(245, 158, 11, 0.03) 100%);
+  }
+}
+
+.summaryItemHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.summaryItemName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.alertDot {
+  width: 36rpx;
+  height: 36rpx;
+  background-color: $color-error;
+  border-radius: $radius-round;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  text-align: center;
+  line-height: 36rpx;
+}
+
+.summaryItemStats {
+  display: flex;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-sm;
+}
+
+.summaryStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.summaryStatNum {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.2;
+
+  &.numPending { color: $color-warning; }
+  &.numFail { color: $color-error; }
+  &.numRecheck { color: $color-primary; }
+}
+
+.summaryStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.summaryItemHint {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}

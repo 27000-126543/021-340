@@ -27,6 +27,7 @@ export interface TaskItem {
   measuredValue?: number;
   measureTime?: string;
   photoUrl?: string;
+  photoCount: number;
   remark?: string;
 }
 
@@ -41,6 +42,15 @@ export interface ConstructionSection {
   tasks: TaskItem[];
 }
 
+export interface MeasureRecord {
+  value: number;
+  unit: string;
+  pass: boolean;
+  time: string;
+  photos: string[];
+  remark: string;
+}
+
 export interface MeasurePoint {
   id: string;
   qrCode: string;
@@ -51,6 +61,7 @@ export interface MeasurePoint {
   lastMeasureTime?: string;
   lastMeasuredValue?: number;
   lastStatus?: TaskStatus;
+  lastRecord?: MeasureRecord;
 }
 
 export type HazardType =
@@ -64,6 +75,20 @@ export type HazardType =
 export type HazardLevel = 'minor' | 'major' | 'critical';
 
 export type HazardStatus = 'pending' | 'rectifying' | 'recheck' | 'closed';
+
+export interface RectificationInfo {
+  photos: string[];
+  description: string;
+  rectifier: string;
+  rectifyTime: string;
+}
+
+export interface RecheckInfo {
+  passed: boolean;
+  checker: string;
+  checkTime: string;
+  remark: string;
+}
 
 export interface Hazard {
   id: string;
@@ -84,6 +109,8 @@ export interface Hazard {
   recheckTime?: string;
   status: HazardStatus;
   statusName: string;
+  rectification?: RectificationInfo;
+  recheckResult?: RecheckInfo;
 }
 
 export interface HazardTypeOption {
@@ -104,4 +131,13 @@ export interface ValidateResult {
   deviation: number;
   deviationPercent: number;
   message: string;
+}
+
+export interface SectionSummary {
+  sectionId: string;
+  sectionName: string;
+  pendingTasks: number;
+  failTasks: number;
+  recheckHazards: number;
+  totalHazards: number;
 }
