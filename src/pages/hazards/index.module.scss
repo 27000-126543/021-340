@@ -36,6 +36,45 @@
   font-weight: $font-weight-semibold;
 }
 
+.sectionFilter {
+  margin-bottom: $spacing-sm;
+}
+
+.sectionScroll {
+  white-space: nowrap;
+}
+
+.sectionChip {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-xs $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-round;
+  margin-right: $spacing-sm;
+  border: 2rpx solid $color-border;
+  transition: all $transition-base;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    border-color: transparent;
+
+    .sectionChipText {
+      color: $color-text-white;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.sectionChipText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+}
+
 .filterTabs {
   display: flex;
   background-color: $color-bg-card;
@@ -611,6 +650,61 @@
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   color: $color-text-white;
+}
+
+.ledgerEntry {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, rgba(30, 90, 168, 0.08) 0%, rgba(30, 90, 168, 0.03) 100%);
+  border: 2rpx solid rgba(30, 90, 168, 0.2);
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+}
+
+.ledgerEntryIcon {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ledgerEntryIconText {
+  font-size: 40rpx;
+}
+
+.ledgerEntryContent {
+  flex: 1;
+}
+
+.ledgerEntryTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.ledgerEntryDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.ledgerEntryArrow {
+  font-size: $font-size-lg;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
 }
 
 .rectifySubmitBtn {

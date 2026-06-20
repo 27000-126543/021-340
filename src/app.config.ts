@@ -2,7 +2,8 @@ export default defineAppConfig({
   pages: [
     'pages/tasks/index',
     'pages/scan/index',
-    'pages/hazards/index'
+    'pages/hazards/index',
+    'pages/recheckLedger/index'
   ],
   window: {
     backgroundTextStyle: 'light',

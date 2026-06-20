@@ -542,3 +542,211 @@
   font-weight: $font-weight-semibold;
   color: $color-text-white;
 }
+
+.draftSection {
+  margin-bottom: $spacing-lg;
+}
+
+.draftHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.draftTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.draftHint {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.draftList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.draftItem {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-warning;
+}
+
+.draftItemInfo {
+  margin-bottom: $spacing-sm;
+}
+
+.draftItemName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.draftItemLoc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.draftItemMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.draftItemMetaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.draftItemTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: auto;
+}
+
+.draftItemActions {
+  display: flex;
+  gap: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+  padding-top: $spacing-sm;
+}
+
+.draftActionBtn {
+  flex: 1;
+  padding: $spacing-xs 0;
+  text-align: center;
+  border-radius: $radius-sm;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.draftSubmitBtn {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.draftEditBtn {
+  background-color: $color-bg-page;
+  border: 2rpx solid $color-border;
+}
+
+.draftActionText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+
+  .draftSubmitBtn & {
+    color: $color-text-white;
+  }
+}
+
+.draftEditingBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border: 2rpx solid rgba(251, 191, 36, 0.3);
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.draftEditingInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.draftEditingIcon {
+  font-size: $font-size-md;
+}
+
+.draftEditingText {
+  font-size: $font-size-sm;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.draftEditingClose {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  background-color: rgba(251, 191, 36, 0.2);
+}
+
+.draftEditingCloseText {
+  font-size: $font-size-md;
+  color: $color-warning;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
+.submitActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.actionBtn {
+  @include button-reset;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.saveDraftBtn {
+  flex: 1;
+  background-color: $color-bg-card;
+  border: 2rpx solid $color-border;
+}
+
+.submitBtn {
+  flex: 2;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.actionBtnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+}
+
+.actionBtnPrimary {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.deleteDraftRow {
+  text-align: center;
+  padding: $spacing-sm 0;
+}
+
+.deleteDraftText {
+  font-size: $font-size-sm;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}

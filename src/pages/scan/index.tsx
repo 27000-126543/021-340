@@ -7,10 +7,11 @@ import StatusTag from '@/components/StatusTag';
 import { findPointByQr } from '@/data/measurePoints';
 import { validateMeasure, formatDateTime } from '@/utils/validator';
 import { useAppStore } from '@/store';
-import type { MeasurePoint, ValidateResult, MeasureRecord } from '@/types';
+import type { MeasurePoint, ValidateResult, MeasureRecord, MeasureDraft } from '@/types';
 
 const ScanPage: React.FC = () => {
   const [currentPoint, setCurrentPoint] = useState<MeasurePoint | null>(null);
+  const [editingDraft, setEditingDraft] = useState<MeasureDraft | null>(null);
   const [manualCode, setManualCode] = useState('');
   const [measuredValue, setMeasuredValue] = useState<string>('');
   const [remark, setRemark] = useState('');
@@ -20,9 +21,14 @@ const ScanPage: React.FC = () => {
   const [viewingPointName, setViewingPointName] = useState('');
 
   const measurePoints = useAppStore((s) => s.measurePoints);
+  const drafts = useAppStore((s) => s.drafts);
   const updateTaskMeasure = useAppStore((s) => s.updateTaskMeasure);
   const updateMeasurePoint = useAppStore((s) => s.updateMeasurePoint);
   const loadFromStorage = useAppStore((s) => s.loadFromStorage);
+  const addDraft = useAppStore((s) => s.addDraft);
+  const updateDraft = useAppStore((s) => s.updateDraft);
+  const deleteDraft = useAppStore((s) => s.deleteDraft);
+  const submitDraft = useAppStore((s) => s.submitDraft);
 
   useDidShow(() => {
     loadFromStorage();
@@ -58,6 +64,7 @@ const ScanPage: React.FC = () => {
     const point = findPointByQr(code) || measurePoints.find(p => p.id === code || p.qrCode === code);
     if (point) {
       setCurrentPoint(point);
+      setEditingDraft(null);
       setMeasuredValue('');
       setValidateResult(null);
       setRemark('');
@@ -81,6 +88,7 @@ const ScanPage: React.FC = () => {
       setViewingPointName(point.standard.name + ' · ' + point.location);
     } else {
       setCurrentPoint(point);
+      setEditingDraft(null);
       setMeasuredValue('');
       setValidateResult(null);
       setRemark('');
@@ -89,10 +97,33 @@ const ScanPage: React.FC = () => {
     }
   };
 
+  const handleDraftClick = (draft: MeasureDraft) => {
+    setEditingDraft(draft);
+    setCurrentPoint({
+      id: draft.pointId,
+      qrCode: draft.qrCode,
+      sectionId: draft.sectionId,
+      sectionName: draft.sectionName,
+      location: draft.location,
+      standard: draft.standard
+    });
+    setMeasuredValue(draft.value ? String(draft.value) : '');
+    setRemark(draft.remark);
+    setPhotos([...draft.photos]);
+    if (draft.value) {
+      const result = validateMeasure(draft.value, draft.standard);
+      setValidateResult(result);
+    } else {
+      setValidateResult(null);
+    }
+    setViewingRecord(null);
+  };
+
   const handleStartNewMeasure = () => {
     const point = recentPoints.find(p => p.lastRecord === viewingRecord) || measurePoints.find(p => p.lastRecord === viewingRecord);
     if (point) {
       setCurrentPoint(point);
+      setEditingDraft(null);
       setMeasuredValue('');
       setValidateResult(null);
       setRemark('');
@@ -103,8 +134,9 @@ const ScanPage: React.FC = () => {
 
   const handleValueChange = (v: string) => {
     setMeasuredValue(v);
-    if (currentPoint && v && !isNaN(Number(v))) {
-      const result = validateMeasure(Number(v), currentPoint.standard);
+    const standard = currentPoint?.standard;
+    if (standard && v && !isNaN(Number(v))) {
+      const result = validateMeasure(Number(v), standard);
       setValidateResult(result);
       if (!result.pass) {
         Taro.vibrateShort({ type: 'medium' });
@@ -131,6 +163,56 @@ const ScanPage: React.FC = () => {
 
   const handleDeletePhoto = (idx: number) => {
     setPhotos(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleSaveDraft = () => {
+    if (!currentPoint) return;
+
+    if (editingDraft) {
+      updateDraft(editingDraft.id, {
+        value: measuredValue ? Number(measuredValue) : undefined,
+        photos: [...photos],
+        remark
+      });
+      Taro.showToast({ title: '草稿已更新', icon: 'success' });
+    } else {
+      const newDraft: MeasureDraft = {
+        id: 'draft-' + Date.now(),
+        pointId: currentPoint.id,
+        qrCode: currentPoint.qrCode,
+        sectionId: currentPoint.sectionId,
+        sectionName: currentPoint.sectionName,
+        location: currentPoint.location,
+        standard: currentPoint.standard,
+        value: measuredValue ? Number(measuredValue) : undefined,
+        photos: [...photos],
+        remark,
+        savedAt: new Date().toISOString()
+      };
+      addDraft(newDraft);
+      Taro.showToast({ title: '草稿已保存', icon: 'success' });
+      setEditingDraft(newDraft);
+    }
+  };
+
+  const handleDeleteDraft = () => {
+    if (!editingDraft) return;
+    Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这份草稿吗？',
+      success: (res) => {
+        if (res.confirm) {
+          deleteDraft(editingDraft.id);
+          setEditingDraft(null);
+          setCurrentPoint(null);
+          setMeasuredValue('');
+          setValidateResult(null);
+          setRemark('');
+          setPhotos([]);
+          Taro.showToast({ title: '已删除', icon: 'success' });
+        }
+      }
+    });
   };
 
   const handleSubmit = () => {
@@ -163,6 +245,11 @@ const ScanPage: React.FC = () => {
       updateTaskMeasure(currentPoint.sectionId, currentPoint.standard.key, numValue, pass, photos, remark);
       updateMeasurePoint(currentPoint.id, numValue, pass, photos, remark);
 
+      if (editingDraft) {
+        deleteDraft(editingDraft.id);
+        setEditingDraft(null);
+      }
+
       Taro.showToast({
         title: pass ? '提交成功' : '已提交（不合格）',
         icon: pass ? 'success' : 'none'
@@ -174,6 +261,40 @@ const ScanPage: React.FC = () => {
       setRemark('');
       setPhotos([]);
     }, 800);
+  };
+
+  const handleSubmitDraft = (draft: MeasureDraft) => {
+    Taro.showModal({
+      title: '提交草稿',
+      content: '确定要提交这份草稿吗？提交后今日任务和最近记录将同步更新。',
+      success: (res) => {
+        if (res.confirm) {
+          const result = submitDraft(draft.id);
+          if (result.success) {
+            Taro.showToast({ title: '提交成功', icon: 'success' });
+            if (editingDraft?.id === draft.id) {
+              setEditingDraft(null);
+              setCurrentPoint(null);
+              setMeasuredValue('');
+              setValidateResult(null);
+              setRemark('');
+              setPhotos([]);
+            }
+          } else {
+            Taro.showToast({ title: result.message, icon: 'none' });
+          }
+        }
+      }
+    });
+  };
+
+  const handleBackFromDraft = () => {
+    setEditingDraft(null);
+    setCurrentPoint(null);
+    setMeasuredValue('');
+    setValidateResult(null);
+    setRemark('');
+    setPhotos([]);
   };
 
   const standard = currentPoint?.standard;
@@ -267,8 +388,64 @@ const ScanPage: React.FC = () => {
         </View>
       </View>
 
+      {drafts.length > 0 && !currentPoint && (
+        <View className={styles.draftSection}>
+          <View className={styles.draftHeader}>
+            <Text className={styles.draftTitle}>📝 离线草稿 ({drafts.length})</Text>
+            <Text className={styles.draftHint}>有网后可一键提交</Text>
+          </View>
+          <View className={styles.draftList}>
+            {drafts.map(draft => (
+              <View key={draft.id} className={styles.draftItem}>
+                <View className={styles.draftItemInfo} onClick={() => handleDraftClick(draft)}>
+                  <Text className={styles.draftItemName}>{draft.standard.name}</Text>
+                  <Text className={styles.draftItemLoc}>{draft.sectionName} · {draft.location}</Text>
+                  <View className={styles.draftItemMeta}>
+                    <Text className={styles.draftItemMetaText}>
+                      {draft.value !== undefined ? `${draft.value}${draft.standard.unit}` : '未填写实测值'}
+                    </Text>
+                    <Text className={styles.draftItemMetaText}>
+                      {draft.photos.length}张照片
+                    </Text>
+                    <Text className={styles.draftItemTime}>
+                      {draft.savedAt.split('T')[0]}
+                    </Text>
+                  </View>
+                </View>
+                <View className={styles.draftItemActions}>
+                  <View
+                    className={classnames(styles.draftActionBtn, styles.draftSubmitBtn)}
+                    onClick={() => handleSubmitDraft(draft)}
+                  >
+                    <Text className={styles.draftActionText}>提交</Text>
+                  </View>
+                  <View
+                    className={classnames(styles.draftActionBtn, styles.draftEditBtn)}
+                    onClick={() => handleDraftClick(draft)}
+                  >
+                    <Text className={styles.draftActionText}>编辑</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
       {currentPoint && standard ? (
         <View>
+          {editingDraft && (
+            <View className={styles.draftEditingBar}>
+              <View className={styles.draftEditingInfo}>
+                <Text className={styles.draftEditingIcon}>📝</Text>
+                <Text className={styles.draftEditingText}>编辑草稿模式</Text>
+              </View>
+              <View className={styles.draftEditingClose} onClick={handleBackFromDraft}>
+                <Text className={styles.draftEditingCloseText}>×</Text>
+              </View>
+            </View>
+          )}
+
           <View className={styles.measurePanel}>
             <View className={styles.pointHeader}>
               <Text className={styles.pointQr}>{currentPoint.qrCode}</Text>
@@ -363,9 +540,23 @@ const ScanPage: React.FC = () => {
             </View>
           </View>
 
-          <Button className={styles.submitBtn} onClick={handleSubmit}>
-            <Text className={styles.submitText}>提交检测结果</Text>
-          </Button>
+          <View className={styles.submitActions}>
+            <Button
+              className={classnames(styles.actionBtn, styles.saveDraftBtn)}
+              onClick={handleSaveDraft}
+            >
+              <Text className={styles.actionBtnText}>{editingDraft ? '更新草稿' : '保存草稿'}</Text>
+            </Button>
+            <Button className={classnames(styles.actionBtn, styles.submitBtn)} onClick={handleSubmit}>
+              <Text className={styles.actionBtnPrimary}>提交检测结果</Text>
+            </Button>
+          </View>
+
+          {editingDraft && (
+            <View className={styles.deleteDraftRow}>
+              <Text className={styles.deleteDraftText} onClick={handleDeleteDraft}>删除这份草稿</Text>
+            </View>
+          )}
         </View>
       ) : (
         <View>

@@ -1,0 +1,340 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-lg $page-padding;
+  background-color: $color-bg-page;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-lg;
+}
+
+.title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  display: block;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.statRow {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: $color-bg-card;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  min-width: 100rpx;
+}
+
+.statNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+
+  &.waiting { color: $color-warning; }
+  &.done { color: $color-success; }
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.filterBar {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.filterBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.filterBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.filterArrow {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.tabs {
+  display: flex;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: 6rpx;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.tabItem {
+  flex: 1;
+  padding: $spacing-sm 0;
+  text-align: center;
+  border-radius: $radius-sm;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    .tabText {
+      color: $color-text-white;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.tabText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.cardWrap {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.cardType {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.cardTypeIcon {
+  font-size: 32rpx;
+}
+
+.cardTypeName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.cardLocation {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  margin-bottom: $spacing-sm;
+}
+
+.cardMetaItem {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.cardFooterItem {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.detailMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.detailPanel {
+  width: 100%;
+  height: 85vh;
+  background-color: $color-bg-card;
+  border-top-left-radius: $radius-xl;
+  border-top-right-radius: $radius-xl;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  flex-shrink: 0;
+}
+
+.detailTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.detailClose {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  background-color: $color-bg-page;
+}
+
+.detailCloseText {
+  font-size: 36rpx;
+  color: $color-text-tertiary;
+  line-height: 1;
+}
+
+.detailBody {
+  flex: 1;
+  padding: $spacing-lg;
+  overflow-y: auto;
+}
+
+.detailSection {
+  margin-bottom: $spacing-lg;
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.detailSectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+
+  &.recheckTitle {
+    color: $color-primary;
+  }
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: $spacing-xs 0;
+  gap: $spacing-sm;
+}
+
+.detailLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.detailValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  text-align: right;
+  flex: 1;
+  word-break: break-all;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-xs;
+  margin-top: $spacing-sm;
+}
+
+.detailPhoto {
+  width: 100%;
+  height: 180rpx;
+  border-radius: $radius-sm;
+  background-color: $color-bg-section;
+}
+
+.recheckResult {
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  text-align: center;
+  margin-bottom: $spacing-sm;
+
+  &.pass {
+    background-color: rgba(22, 163, 74, 0.1);
+  }
+  &.fail {
+    background-color: rgba(220, 38, 38, 0.1);
+  }
+}
+
+.recheckResultText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+
+  .pass & { color: $color-success; }
+  .fail & { color: $color-error; }
+}

@@ -51,6 +51,20 @@ export interface MeasureRecord {
   remark: string;
 }
 
+export interface MeasureDraft {
+  id: string;
+  pointId: string;
+  qrCode: string;
+  sectionId: string;
+  sectionName: string;
+  location: string;
+  standard: MeasureStandard;
+  value?: number;
+  photos: string[];
+  remark: string;
+  savedAt: string;
+}
+
 export interface MeasurePoint {
   id: string;
   qrCode: string;
@@ -106,6 +120,7 @@ export interface Hazard {
   rectifier: string;
   rectifierPhone?: string;
   deadline: string;
+  planRecheckTime: string;
   recheckTime?: string;
   status: HazardStatus;
   statusName: string;
@@ -138,6 +153,23 @@ export interface SectionSummary {
   sectionName: string;
   pendingTasks: number;
   failTasks: number;
+  pendingRectifyHazards: number;
   recheckHazards: number;
+  closedHazards: number;
   totalHazards: number;
+}
+
+export interface SectionInspectionSummary {
+  sectionId: string;
+  sectionName: string;
+  totalTasks: number;
+  pendingTasks: number;
+  passTasks: number;
+  failTasks: number;
+  pendingRectifyHazards: number;
+  recheckHazards: number;
+  closedHazards: number;
+  totalHazards: number;
+  passRate: number;
+  hazardCloseRate: number;
 }

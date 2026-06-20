@@ -46,10 +46,19 @@ const HazardCard: React.FC<HazardCardProps> = ({ hazard, onRectify, onRecheck })
         <Text className={styles.descText}>{hazard.description}</Text>
       </View>
 
-      {hazard.recheckTime && hazard.status !== 'closed' && (
+      {hazard.status !== 'closed' && hazard.planRecheckTime && (
         <View className={styles.recheckRow}>
-          <Text className={styles.recheckLabel}>⏰ 复查时间</Text>
-          <Text className={classnames(styles.recheckValue, styles.recheckHighlight)}>{hazard.recheckTime}</Text>
+          <Text className={styles.recheckLabel}>⏰ 计划复查</Text>
+          <Text className={classnames(styles.recheckValue, styles.recheckHighlight)}>{hazard.planRecheckTime}</Text>
+        </View>
+      )}
+
+      {hazard.status === 'closed' && hazard.recheckResult && (
+        <View className={classnames(styles.recheckRow, styles.recheckClosed)}>
+          <Text className={styles.recheckLabel}>✅ 复查结论</Text>
+          <Text className={styles.recheckValue}>
+            {hazard.recheckResult.passed ? '通过' : '未通过'} · {hazard.recheckResult.checkTime}
+          </Text>
         </View>
       )}
 

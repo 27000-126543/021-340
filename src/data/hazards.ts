@@ -33,6 +33,7 @@ export const mockHazards: Hazard[] = [
     rectifier: '张建国',
     rectifierPhone: '13800138001',
     deadline: '2026-06-21 18:00',
+    planRecheckTime: '2026-06-21 19:00',
     status: 'rectifying',
     statusName: '整改中'
   },
@@ -52,9 +53,16 @@ export const mockHazards: Hazard[] = [
     rectifier: '李明辉',
     rectifierPhone: '13800138002',
     deadline: '2026-06-21 12:00',
+    planRecheckTime: '2026-06-21 13:00',
     status: 'recheck',
     statusName: '待复查',
-    recheckTime: '2026-06-21 14:00'
+    recheckTime: '2026-06-21 14:00',
+    rectification: {
+      photos: [],
+      description: '已完成积水抽排，清理基础面并铺设防水布',
+      rectifier: '李明辉',
+      rectifyTime: '2026-06-21 11:30'
+    }
   },
   {
     id: 'hz-003',
@@ -72,9 +80,22 @@ export const mockHazards: Hazard[] = [
     rectifier: '张建国',
     rectifierPhone: '13800138001',
     deadline: '2026-06-21 10:00',
+    planRecheckTime: '2026-06-21 10:30',
     status: 'closed',
     statusName: '已关闭',
-    recheckTime: '2026-06-21 09:45'
+    recheckTime: '2026-06-21 09:45',
+    rectification: {
+      photos: [],
+      description: '已重新固定传感器，校准数据正常',
+      rectifier: '张建国',
+      rectifyTime: '2026-06-21 08:50'
+    },
+    recheckResult: {
+      passed: true,
+      checker: '赵安全',
+      checkTime: '2026-06-21 09:45',
+      remark: '安装牢固，数据正常，复查通过'
+    }
   },
   {
     id: 'hz-004',
@@ -92,6 +113,7 @@ export const mockHazards: Hazard[] = [
     rectifier: '李明辉',
     rectifierPhone: '13800138002',
     deadline: '2026-06-21 15:00',
+    planRecheckTime: '2026-06-21 16:00',
     status: 'pending',
     statusName: '待整改'
   }

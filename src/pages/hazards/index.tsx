@@ -28,6 +28,7 @@ const deadlineOptions = [
 
 const HazardsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
+  const [activeSectionId, setActiveSectionId] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [showRectifyForm, setShowRectifyForm] = useState(false);
   const [showRecheckForm, setShowRecheckForm] = useState(false);
@@ -50,12 +51,14 @@ const HazardsPage: React.FC = () => {
   const [recheckPassed, setRecheckPassed] = useState(true);
 
   const hazards = useAppStore((s) => s.hazards);
+  const sections = useAppStore((s) => s.sections);
   const addHazard = useAppStore((s) => s.addHazard);
   const submitRectification = useAppStore((s) => s.submitRectification);
   const submitRecheck = useAppStore((s) => s.submitRecheck);
   const loadFromStorage = useAppStore((s) => s.loadFromStorage);
   const checkAndUpdateRecheckStatus = useAppStore((s) => s.checkAndUpdateRecheckStatus);
   const isRecheckOverdue = useAppStore((s) => s.isRecheckOverdue);
+  const consumePendingHazardSectionId = useAppStore((s) => s.consumePendingHazardSectionId);
 
   const checkRecheckAlerts = () => {
     const updated = checkAndUpdateRecheckStatus();
@@ -71,6 +74,10 @@ const HazardsPage: React.FC = () => {
 
   useDidShow(() => {
     loadFromStorage();
+    const pendingSectionId = consumePendingHazardSectionId();
+    if (pendingSectionId) {
+      setActiveSectionId(pendingSectionId);
+    }
     setTimeout(() => { checkRecheckAlerts(); }, 200);
   });
 
@@ -86,9 +93,15 @@ const HazardsPage: React.FC = () => {
   const recheckCount = useMemo(() => recheckAlert.length, [recheckAlert]);
 
   const filteredHazards = useMemo(() => {
-    if (activeTab === 'all') return hazards;
-    return hazards.filter(h => h.status === activeTab);
-  }, [hazards, activeTab]);
+    let result = hazards;
+    if (activeSectionId) {
+      result = result.filter(h => h.sectionId === activeSectionId);
+    }
+    if (activeTab !== 'all') {
+      result = result.filter(h => h.status === activeTab);
+    }
+    return result;
+  }, [hazards, activeTab, activeSectionId]);
 
   const resetForm = () => {
     setFormType(''); setFormLevel('major'); setFormSection('A区1#楼');
@@ -242,6 +255,15 @@ const HazardsPage: React.FC = () => {
         </View>
       </View>
 
+      <View className={styles.ledgerEntry} onClick={() => Taro.navigateTo({ url: '/pages/recheckLedger/index' })}>
+        <View className={styles.ledgerEntryIcon}><Text className={styles.ledgerEntryIconText}>📋</Text></View>
+        <View className={styles.ledgerEntryContent}>
+          <Text className={styles.ledgerEntryTitle}>复查台账</Text>
+          <Text className={styles.ledgerEntryDesc}>按施工段、日期查看所有复查记录</Text>
+        </View>
+        <Text className={styles.ledgerEntryArrow}>→</Text>
+      </View>
+
       {recheckCount > 0 && (
         <View className={styles.recheckAlertBar}>
           <View className={styles.recheckAlertIcon}><Text className={styles.recheckAlertIconText}>⏰</Text></View>
@@ -254,6 +276,26 @@ const HazardsPage: React.FC = () => {
           </View>
         </View>
       )}
+
+      <View className={styles.sectionFilter}>
+        <ScrollView scrollX className={styles.sectionScroll} showScrollbar={false}>
+          <View
+            className={classnames(styles.sectionChip, !activeSectionId && styles.active)}
+            onClick={() => setActiveSectionId('')}
+          >
+            <Text className={styles.sectionChipText}>全部施工段</Text>
+          </View>
+          {sections.map(s => (
+            <View
+              key={s.id}
+              className={classnames(styles.sectionChip, activeSectionId === s.id && styles.active)}
+              onClick={() => setActiveSectionId(s.id)}
+            >
+              <Text className={styles.sectionChipText}>{s.name}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
 
       <View className={styles.filterTabs}>
         {tabs.map(tab => (
