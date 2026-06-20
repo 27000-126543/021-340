@@ -37,7 +37,7 @@ const HazardsPage: React.FC = () => {
 
   const [formType, setFormType] = useState<HazardType | ''>('');
   const [formLevel, setFormLevel] = useState<HazardLevel>('major');
-  const [formSection, setFormSection] = useState('A区1#楼');
+  const [formSectionId, setFormSectionId] = useState('sec-001');
   const [formLocation, setFormLocation] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPhotos, setFormPhotos] = useState<string[]>([]);
@@ -104,7 +104,7 @@ const HazardsPage: React.FC = () => {
   }, [hazards, activeTab, activeSectionId]);
 
   const resetForm = () => {
-    setFormType(''); setFormLevel('major'); setFormSection('A区1#楼');
+    setFormType(''); setFormLevel('major'); setFormSectionId('sec-001');
     setFormLocation(''); setFormDesc(''); setFormPhotos([]);
     setFormRectifier(null); setFormDeadline('today');
   };
@@ -160,6 +160,7 @@ const HazardsPage: React.FC = () => {
       const levelMap: Record<HazardLevel, string> = { minor: '轻微', major: '一般', critical: '严重' };
       const deadline = computeDeadline();
       const d = new Date(); d.setMinutes(d.getMinutes() + 30);
+      const selectedSection = sections.find(s => s.id === formSectionId);
 
       const newHazard: Hazard = {
         id: 'hz-' + Date.now(),
@@ -167,8 +168,8 @@ const HazardsPage: React.FC = () => {
         typeName: typeOpt?.label || '其他',
         level: formLevel,
         levelName: levelMap[formLevel],
-        sectionId: 'sec-001',
-        sectionName: formSection,
+        sectionId: formSectionId,
+        sectionName: selectedSection?.name || '未知施工段',
         location: formLocation,
         description: formDesc,
         photoUrls: formPhotos,
@@ -177,7 +178,7 @@ const HazardsPage: React.FC = () => {
         rectifier: formRectifier!.name,
         rectifierPhone: formRectifier!.phone,
         deadline,
-        recheckTime: formatDateTime(d),
+        planRecheckTime: formatDateTime(d),
         status: 'pending',
         statusName: '待整改'
       };
@@ -365,7 +366,18 @@ const HazardsPage: React.FC = () => {
               </View>
               <View className={styles.formGroup}>
                 <Text className={classnames(styles.formLabel, styles.formLabelRequired)}>施工段</Text>
-                <Input className={styles.formInput} placeholder="输入施工段/楼栋号" value={formSection} onInput={(e) => setFormSection(e.detail.value)} />
+                <View className={styles.sectionPicker}>
+                  {sections.map(s => (
+                    <View
+                      key={s.id}
+                      className={classnames(styles.sectionOption, formSectionId === s.id && styles.selected)}
+                      onClick={() => setFormSectionId(s.id)}
+                    >
+                      <Text className={styles.sectionOptionName}>{s.name}</Text>
+                      <Text className={styles.sectionOptionLoc}>{s.location}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
               <View className={styles.formGroup}>
                 <Text className={classnames(styles.formLabel, styles.formLabelRequired)}>具体位置</Text>
